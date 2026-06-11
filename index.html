@@ -2916,13 +2916,35 @@ function setResult(text, cls) {
 // then rural tiers by distance, else Standard. Each carries an operational
 // instruction ("action") shown next to the badge.
 function categoryForZip(idx) {
-  if (NOSERVICE_SET[idx]) return { cls: 'noservice', label: 'No Service', csr: 'Can Not Load From Location', sales: 'Add $2500' };
-  if (PUGET_SET[idx]) return { cls: 'puget', label: 'Puget Sound', csr: 'Will Require Local Tow', sales: 'Add $1000' };
-  const d = ZIP_DIST_MI[idx];
-  if (d >= 100) return { cls: 'rural-100', label: 'Rural 100+', csr: 'Required backup POC', sales: 'Add $1000' };
-  if (d >= 50) return { cls: 'rural-50', label: 'Rural 50–99', csr: 'Required backup POC', sales: 'Add $400' };
-  if (d >= 25) return { cls: 'rural-25', label: 'Rural 25–49', csr: 'Recommended backup POC', sales: 'Add $150' };
-  return { cls: 'standard', label: 'Standard', csr: 'Recommended backup POC', sales: null };
+  // Determine base group key (override takes priority)
+  let cls;
+  if (ZIP_OVERRIDES && ZIP_OVERRIDES[idx]) {
+    cls = ZIP_OVERRIDES[idx];
+  } else if (NOSERVICE_SET[idx]) {
+    cls = 'noservice';
+  } else if (PUGET_SET[idx]) {
+    cls = 'puget';
+  } else {
+    const d = ZIP_DIST_MI[idx];
+    cls = d >= 100 ? 'rural-100' : d >= 50 ? 'rural-50' : d >= 25 ? 'rural-25' : 'standard';
+  }
+  // Look up live config, fall back to hardcoded defaults
+  const defaults = {
+    'noservice': { label: 'No Service',    csr: 'Can Not Load From Location', sales: 'Add $2500' },
+    'puget':     { label: 'Puget Sound',   csr: 'Will Require Local Tow',     sales: 'Add $1000' },
+    'rural-100': { label: 'Rural 100+',    csr: 'Required backup POC',        sales: 'Add $1000' },
+    'rural-50':  { label: 'Rural 50–99',   csr: 'Required backup POC',        sales: 'Add $400'  },
+    'rural-25':  { label: 'Rural 25–49',   csr: 'Recommended backup POC',     sales: 'Add $150'  },
+    'standard':  { label: 'Standard',      csr: 'Recommended backup POC',     sales: null        },
+  };
+  const def = defaults[cls] || defaults['standard'];
+  const cfg = (typeof GROUP_CONFIG !== 'undefined') ? GROUP_CONFIG[cls] : null;
+  return {
+    cls,
+    label: (cfg && cfg.label)     || def.label,
+    csr:   (cfg && cfg.csr_note)  || def.csr,
+    sales: cfg ? cfg.sales_note   : def.sales,
+  };
 }
 
 function setCategoryBadge(idx) {
@@ -3378,24 +3400,7 @@ async function loadGroupConfig() {
   }
 }
 
-// Override categoryForZip to use live GROUP_CONFIG
-const _origCategoryForZip = categoryForZip;
-function categoryForZip(idx) {
-  const base = _origCategoryForZip(idx);
-  // Apply override group key if present
-  const overrideGrp = ZIP_OVERRIDES[idx];
-  const grpKey = overrideGrp || base.cls;
-  const cfg = GROUP_CONFIG[grpKey];
-  if (cfg) {
-    return {
-      cls:   grpKey,
-      label: cfg.label    || base.label,
-      csr:   cfg.csr_note || base.csr,
-      sales: cfg.sales_note !== undefined ? cfg.sales_note : base.sales,
-    };
-  }
-  return base;
-}
+// categoryForZip patched inline — see original function
 
 // ---- Admin panel open/close ------------------------------------------------
 document.getElementById('admin-btn').addEventListener('click', () => {
