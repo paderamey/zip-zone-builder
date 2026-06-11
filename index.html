@@ -2962,7 +2962,7 @@ function showToast(msg, color) {
 /* ===================== ADMIN: ASSIGN TO GROUP ===================== */
 const SUPABASE_URL = 'https://wygahdsshcdviwwppxwh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_B5UD8Nk8bh5LGQvHXJ5OuQ_90kONEAd';
-const ADMIN_PIN   = '1248';
+const ADMIN_PINS  = ['1248', '0511']; // 1248 = primary, 0511 = Matt Tincher
 
 // In-memory overrides: zipIndex → group string (e.g. 'noservice', 'standard', etc.)
 const ZIP_OVERRIDES = {};   // loaded from Supabase on init
@@ -3122,7 +3122,7 @@ function closePinModal() {
 document.getElementById('pin-cancel').addEventListener('click', closePinModal);
 document.getElementById('pin-confirm').addEventListener('click', () => {
   const val = document.getElementById('pin-input').value;
-  if (val === ADMIN_PIN) {
+  if (ADMIN_PINS.includes(val)) {
     const cb = _assignCallback;
     closePinModal();
     if (cb) cb();
