@@ -696,169 +696,85 @@
     z-index: 200;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<style>
-  /* Password gate overlay - shown until viewer password is entered */
-  #gate-overlay {
-    position: fixed; inset: 0; z-index: 99999;
-    background: #0b0d10;
-    display: flex; align-items: center; justify-content: center;
+
+  /* ---- Assign-to-Group button ---- */
+  .btn.assign-btn {
+    background: var(--panel-2);
+    color: var(--gold);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  .btn.assign-btn:hover { background: rgba(212,168,87,0.12); }
+  .btn.assign-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ---- PIN modal ---- */
+  #pin-modal .modal { width: 320px; }
+  #pin-modal input[type=password] {
+    letter-spacing: 0.25em;
+    font-size: 20px;
+    text-align: center;
+  }
+  #pin-modal .pin-error {
+    color: #ff5c82;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 6px;
+    min-height: 14px;
+  }
+
+  /* ---- Group picker modal ---- */
+  #group-modal .modal { width: 340px; }
+  .group-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .group-btn {
+    padding: 12px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line-2);
+    background: var(--panel-2);
+    color: var(--ink);
     font-family: 'IBM Plex Sans', sans-serif;
-  }
-  #gate-overlay.hidden { display: none; }
-  .gate-card {
-    background: #14181d;
-    border: 1px solid #2e3640;
-    border-radius: 10px;
-    padding: 32px 36px;
-    width: 360px;
-    max-width: calc(100vw - 40px);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-  }
-  .gate-title { font-size: 18px; font-weight: 600; color: #f0f3f6; margin: 0 0 6px 0; letter-spacing: 0.01em; }
-  .gate-sub { font-size: 12px; color: #7e8893; margin: 0 0 20px 0; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em; text-transform: uppercase; }
-  .gate-input {
-    width: 100%; box-sizing: border-box;
-    background: #0b0d10; border: 1px solid #3d4651;
-    color: #f0f3f6; padding: 11px 13px;
-    border-radius: 6px;
-    font-family: 'IBM Plex Sans', sans-serif; font-size: 14px;
-    outline: none;
-  }
-  .gate-input:focus { border-color: #ff5b3d; }
-  .gate-btn {
-    width: 100%; box-sizing: border-box;
-    margin-top: 12px;
-    background: #ff5b3d; border: 1px solid #ff5b3d;
-    color: #fff; padding: 11px 14px;
-    border-radius: 6px;
-    font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 14px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.1s;
+    display: flex; align-items: center; gap: 8px;
+    transition: background 120ms, border-color 120ms;
   }
-  .gate-btn:hover { background: #ff7059; border-color: #ff7059; }
-  .gate-error { color: #ff7059; font-size: 12px; margin-top: 8px; min-height: 14px; font-family: 'IBM Plex Mono', monospace; }
-  .gate-logout {
-    position: fixed; top: 12px; right: 12px; z-index: 9998;
-    background: transparent; border: 1px solid #3d4651;
-    color: #7e8893; padding: 4px 10px;
-    border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-    letter-spacing: 0.05em; text-transform: uppercase;
-    cursor: pointer;
+  .group-btn:hover { border-color: var(--ink-dim); background: #20262e; }
+  .group-btn .g-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .group-btn.noservice { border-color: rgba(209,26,74,0.5); }
+  .group-btn.noservice:hover { background: rgba(209,26,74,0.1); }
+  .group-btn.puget { border-color: rgba(59,130,246,0.5); }
+  .group-btn.puget:hover { background: rgba(59,130,246,0.08); }
+  .group-btn.rural-100 { border-color: rgba(255,95,168,0.45); }
+  .group-btn.rural-100:hover { background: rgba(255,95,168,0.08); }
+  .group-btn.rural-50 { border-color: rgba(155,124,255,0.45); }
+  .group-btn.rural-50:hover { background: rgba(155,124,255,0.08); }
+  .group-btn.rural-25 { border-color: rgba(62,199,194,0.45); }
+  .group-btn.rural-25:hover { background: rgba(62,199,194,0.08); }
+  .group-btn.standard { border-color: var(--line-2); }
+  .group-btn.standard:hover { background: #20262e; }
+  #group-modal .group-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
   }
-  .gate-logout:hover { color: #f0f3f6; border-color: #f0f3f6; }
+  #assign-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    margin-top: 10px;
+    min-height: 14px;
+    color: var(--good);
+  }
+  #assign-status.err { color: #ff5c82; }
+
 </style>
 </head>
 <body>
-
-<div id="gate-overlay">
-  <div class="gate-card">
-    <h2 class="gate-title">ZIP Zone Builder</h2>
-    <div class="gate-sub">Enter password to continue</div>
-    <input type="password" id="gate-input" class="gate-input" placeholder="Password" autocomplete="off" />
-    <button id="gate-btn" class="gate-btn">Unlock</button>
-    <div id="gate-error" class="gate-error"></div>
-  </div>
-</div>
-
-<script>
-(function(){
-  // Configuration — these are baked in. Passwords are client-side protection only.
-  const VIEWER_PASSWORD = "auto123!";
-  const ADMIN_PASSWORD = "Redskins94!";
-  const SUPABASE_URL = "https://wygahdsshcdviwwppxwh.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_B5UD8Nk8bh5LGQvHXJ5OuQ_90kONEAd";
-  const VIEWER_KEY = "zzb_viewer_ok";
-  const ADMIN_KEY = "zzb_admin_ok";
-
-  // Expose for later use by admin panel code
-  window.ZZB_CONFIG = {
-    SUPABASE_URL, SUPABASE_KEY,
-    VIEWER_PASSWORD, ADMIN_PASSWORD,
-    VIEWER_KEY, ADMIN_KEY
-  };
-
-  // Initialize Supabase client (uses the global from the CDN script).
-  // Wait for the supabase library to load before creating the client.
-  function initSupabase() {
-    if (window.supabase && window.supabase.createClient) {
-      window.ZZB_DB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } else {
-      setTimeout(initSupabase, 50);
-    }
-  }
-  initSupabase();
-
-  const overlay = document.getElementById('gate-overlay');
-  const input = document.getElementById('gate-input');
-  const btn = document.getElementById('gate-btn');
-  const err = document.getElementById('gate-error');
-
-  // Check if viewer is already unlocked
-  function isViewerUnlocked() {
-    try { return localStorage.getItem(VIEWER_KEY) === "1"; } catch(e) { return false; }
-  }
-  function isAdminUnlocked() {
-    try { return localStorage.getItem(ADMIN_KEY) === "1"; } catch(e) { return false; }
-  }
-  window.ZZB_IS_ADMIN = isAdminUnlocked;
-
-  function unlock() {
-    overlay.classList.add('hidden');
-    // Add a small lock-icon footer button so user can log out
-    if (!document.getElementById('gate-logout-btn')) {
-      const btn = document.createElement('button');
-      btn.id = 'gate-logout-btn';
-      btn.className = 'gate-logout';
-      btn.textContent = isAdminUnlocked() ? '🔒 Admin · Lock' : '🔒 Lock';
-      btn.title = 'Clear saved passwords and lock the page';
-      btn.onclick = () => {
-        if (confirm('Lock this device? You will need to re-enter the password to unlock.')) {
-          try { localStorage.removeItem(VIEWER_KEY); localStorage.removeItem(ADMIN_KEY); } catch(e){}
-          location.reload();
-        }
-      };
-      document.body.appendChild(btn);
-    }
-  }
-
-  function tryUnlock() {
-    const val = input.value;
-    if (val === VIEWER_PASSWORD) {
-      try { localStorage.setItem(VIEWER_KEY, "1"); } catch(e){}
-      err.textContent = "";
-      unlock();
-    } else if (val === ADMIN_PASSWORD) {
-      try {
-        localStorage.setItem(VIEWER_KEY, "1");
-        localStorage.setItem(ADMIN_KEY, "1");
-      } catch(e){}
-      err.textContent = "";
-      unlock();
-    } else {
-      err.textContent = "Incorrect password";
-      input.value = "";
-      input.focus();
-    }
-  }
-
-  // If already unlocked, skip the gate
-  if (isViewerUnlocked()) {
-    unlock();
-  }
-
-  btn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') tryUnlock();
-  });
-
-  // Focus the input when gate is shown
-  if (!isViewerUnlocked()) {
-    setTimeout(() => input.focus(), 100);
-  }
-})();
-</script>
 
 <div class="topbar">
   <div class="brand">
@@ -1049,6 +965,12 @@
           Export Rural 25–49
         </button>
       </div>
+      <div class="export-row" id="assign-row" style="display:none;">
+        <button class="btn assign-btn" id="btn-assign" title="Assign drawn zone to a category (admin)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Assign to Group
+        </button>
+      </div>
       <input type="file" id="file-input" accept=".json,application/json" style="display:none">
     </div>
   </div>
@@ -1062,6 +984,51 @@
     <div class="modal-actions">
       <button class="btn" id="modal-cancel">Cancel</button>
       <button class="btn primary" id="modal-save">Save Zone</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="pin-modal">
+  <div class="modal">
+    <h3>Admin Access</h3>
+    <p>Enter your PIN to assign ZIPs to a group.</p>
+    <input type="password" id="pin-input" placeholder="••••" maxlength="10" autocomplete="off">
+    <div class="pin-error" id="pin-error"></div>
+    <div class="modal-actions">
+      <button class="btn" id="pin-cancel">Cancel</button>
+      <button class="btn primary" id="pin-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="group-modal">
+  <div class="modal">
+    <h3>Assign to Group</h3>
+    <div class="group-count" id="group-count"></div>
+    <div class="group-grid">
+      <button class="group-btn noservice" data-group="noservice">
+        <span class="g-dot" style="background:#d11a4a"></span>No Service
+      </button>
+      <button class="group-btn puget" data-group="puget">
+        <span class="g-dot" style="background:#3b82f6"></span>Puget Sound
+      </button>
+      <button class="group-btn rural-100" data-group="rural-100">
+        <span class="g-dot" style="background:#ff5fa8"></span>Rural 100+
+      </button>
+      <button class="group-btn rural-50" data-group="rural-50">
+        <span class="g-dot" style="background:#9b7cff"></span>Rural 50–99
+      </button>
+      <button class="group-btn rural-25" data-group="rural-25">
+        <span class="g-dot" style="background:#3ec7c2"></span>Rural 25–49
+      </button>
+      <button class="group-btn standard" data-group="standard">
+        <span class="g-dot" style="background:#4a5563"></span>Standard
+      </button>
+    </div>
+    <div id="assign-status"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn" id="group-cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -2991,6 +2958,280 @@ function showToast(msg, color) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+
+/* ===================== ADMIN: ASSIGN TO GROUP ===================== */
+const SUPABASE_URL = 'https://wygahdsshcdviwwppxwh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_B5UD8Nk8bh5LGQvHXJ5OuQ_90kONEAd';
+const ADMIN_PIN   = '1248';
+
+// In-memory overrides: zipIndex → group string (e.g. 'noservice', 'standard', etc.)
+const ZIP_OVERRIDES = {};   // loaded from Supabase on init
+let overridesLoaded = false;
+
+// ---- Supabase helpers -------------------------------------------------------
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SUPABASE_URL + path, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || '',
+    },
+    ...opts,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function ensureTable() {
+  // Create table if it doesn't exist via RPC won't work from anon key;
+  // instead we just try to upsert and handle gracefully.
+  // Table must be pre-created in Supabase: zip_overrides (zip text PK, grp text, updated_at timestamptz)
+}
+
+async function loadOverrides() {
+  try {
+    const rows = await sbFetch('/rest/v1/zip_overrides?select=zip,grp', { method: 'GET', prefer: '' });
+    if (Array.isArray(rows)) {
+      for (const r of rows) {
+        const idx = ZIP_INDEX.get(r.zip);
+        if (idx !== undefined) ZIP_OVERRIDES[idx] = r.grp;
+      }
+    }
+    overridesLoaded = true;
+    draw(); // repaint with overrides
+  } catch (e) {
+    console.warn('Could not load overrides (table may not exist yet):', e.message);
+    overridesLoaded = true;
+  }
+}
+
+async function saveOverrides(zipIndices, group) {
+  // Build upsert payload
+  const rows = [];
+  for (const idx of zipIndices) {
+    const zip = ZSTR.substr(idx * 5, 5);
+    rows.push({ zip, grp: group, updated_at: new Date().toISOString() });
+  }
+  // Batch in chunks of 500
+  const CHUNK = 500;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    await sbFetch('/rest/v1/zip_overrides', {
+      method: 'POST',
+      prefer: 'resolution=merge-duplicates',
+      body: JSON.stringify(rows.slice(i, i + CHUNK)),
+    });
+  }
+}
+
+// ---- Override-aware category lookup ----------------------------------------
+// Replaces categoryForZip for rendering when overrides are loaded.
+function effectiveCategoryForZip(idx) {
+  if (ZIP_OVERRIDES[idx]) return ZIP_OVERRIDES[idx];
+  return null; // fall through to original logic
+}
+
+// ---- Patch draw() to colour overridden ZIPs --------------------------------
+// We hook into the existing draw by monkey-patching at the "unselected dots" pass.
+// Simpler: we add an extra overlay pass after the original draw runs.
+const _origDraw = draw;
+window._drawOverridePass = function() {
+  if (!overridesLoaded || Object.keys(ZIP_OVERRIDES).length === 0) return;
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.translate(viewTx, viewTy);
+  ctx.scale(viewScale, viewScale);
+
+  const dotR = Math.max(1.1, 1.6 / Math.sqrt(viewScale));
+  const colors = {
+    'noservice': '#d11a4a',
+    'puget':     '#3b82f6',
+    'rural-100': '#ff5fa8',
+    'rural-50':  '#9b7cff',
+    'rural-25':  '#3ec7c2',
+    'standard':  '#4a5563',
+  };
+  // Group indices by colour
+  const byGroup = {};
+  for (const [idxStr, grp] of Object.entries(ZIP_OVERRIDES)) {
+    const idx = parseInt(idxStr);
+    if (selectedSet[idx]) continue; // selected dots take priority
+    if (!byGroup[grp]) byGroup[grp] = [];
+    byGroup[grp].push(idx);
+  }
+  for (const [grp, indices] of Object.entries(byGroup)) {
+    const col = colors[grp] || '#4a5563';
+    const r = grp === 'standard' ? dotR : dotR * 1.4;
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    for (const idx of indices) {
+      const x = sxBase[idx], y = syBase[idx];
+      ctx.moveTo(x + r, y);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+};
+
+// Wrap the global draw function to include our override pass
+(function() {
+  const orig = window.draw; // captured at script end after all defs
+  // We can't wrap at definition time because draw() is not yet defined.
+  // Instead we'll patch after the fact at INIT time.
+})();
+
+// ---- Show/hide Assign button when a zone is drawn --------------------------
+// We hook finishDrawing to show the button once ZIPs are pending.
+const _origFinishDrawing = finishDrawing;
+function finishDrawing() {
+  _origFinishDrawing();
+  // After finishDrawing runs, pendingZoneIndices is set IF there were ZIPs.
+  // We reveal the assign button whenever there are pending indices.
+  updateAssignBtn();
+}
+
+// Also hook modal-save and modal-cancel to update button visibility.
+document.getElementById('modal-save').addEventListener('click', () => {
+  // After save, no pending zone → hide assign btn
+  setTimeout(updateAssignBtn, 50);
+}, true);
+document.getElementById('modal-cancel').addEventListener('click', () => {
+  setTimeout(updateAssignBtn, 50);
+}, true);
+
+function updateAssignBtn() {
+  const row = document.getElementById('assign-row');
+  if (!row) return;
+  // Show if we have a current drawn zone (pendingZoneIndices) OR if there are named zones
+  const hasPending = pendingZoneIndices && pendingZoneIndices.size > 0;
+  const hasZones = zones.length > 0;
+  row.style.display = (hasPending || hasZones) ? 'flex' : 'none';
+}
+
+// ---- PIN modal logic --------------------------------------------------------
+let _assignCallback = null;
+
+function openPinModal(onSuccess) {
+  _assignCallback = onSuccess;
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-modal').classList.add('show');
+  setTimeout(() => document.getElementById('pin-input').focus(), 80);
+}
+
+function closePinModal() {
+  document.getElementById('pin-modal').classList.remove('show');
+  _assignCallback = null;
+}
+
+document.getElementById('pin-cancel').addEventListener('click', closePinModal);
+document.getElementById('pin-confirm').addEventListener('click', () => {
+  const val = document.getElementById('pin-input').value;
+  if (val === ADMIN_PIN) {
+    closePinModal();
+    if (_assignCallback) _assignCallback();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+});
+document.getElementById('pin-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('pin-confirm').click();
+  if (e.key === 'Escape') closePinModal();
+});
+
+// ---- Group picker modal logic -----------------------------------------------
+let _pendingAssignIndices = null;
+
+function openGroupModal(indices) {
+  _pendingAssignIndices = indices;
+  const n = indices instanceof Set ? indices.size : indices.length;
+  document.getElementById('group-count').textContent = n.toLocaleString() + ' ZIP codes to reassign';
+  document.getElementById('assign-status').textContent = '';
+  document.getElementById('assign-status').className = 'assign-status';
+  document.getElementById('group-modal').classList.add('show');
+}
+
+function closeGroupModal() {
+  document.getElementById('group-modal').classList.remove('show');
+  _pendingAssignIndices = null;
+}
+
+document.getElementById('group-cancel').addEventListener('click', closeGroupModal);
+
+document.querySelectorAll('.group-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const group = btn.dataset.group;
+    const indices = _pendingAssignIndices;
+    if (!indices) return;
+
+    const statusEl = document.getElementById('assign-status');
+    statusEl.textContent = 'Saving…';
+    statusEl.className = '';
+
+    // Determine which indices to actually write.
+    // Rule: overwrite any existing override EXCEPT "noservice" — those stay.
+    const toWrite = new Set();
+    const indArr = indices instanceof Set ? [...indices] : indices;
+    for (const idx of indArr) {
+      if (group !== 'noservice' && ZIP_OVERRIDES[idx] === 'noservice') continue;
+      toWrite.add(idx);
+    }
+
+    try {
+      await saveOverrides(toWrite, group);
+      // Apply locally
+      for (const idx of toWrite) {
+        if (group === 'standard') {
+          delete ZIP_OVERRIDES[idx];
+        } else {
+          ZIP_OVERRIDES[idx] = group;
+        }
+      }
+      statusEl.textContent = '✓ Saved ' + toWrite.size.toLocaleString() + ' ZIPs to ' + group;
+      draw();
+      setTimeout(closeGroupModal, 1200);
+    } catch (err) {
+      statusEl.textContent = 'Error: ' + err.message;
+      statusEl.className = 'err';
+    }
+  });
+});
+
+// ---- "Assign to Group" button click ----------------------------------------
+document.getElementById('btn-assign').addEventListener('click', () => {
+  // Determine what to assign: pending drawn zone OR all zones combined
+  const hasPending = pendingZoneIndices && pendingZoneIndices.size > 0;
+  const source = hasPending ? pendingZoneIndices : (() => {
+    const all = new Set();
+    for (const z of zones) for (const i of z.indices) all.add(i);
+    return all;
+  })();
+
+  if (!source || source.size === 0) {
+    showToast('Draw a zone first', '#888');
+    return;
+  }
+
+  openPinModal(() => openGroupModal(source));
+});
+
+// ---- Load overrides & patch draw on init -----------------------------------
+// Called at the very end (see INIT section below)
+function initAdminFeature() {
+  // Patch draw to also run the override pass
+  const _rawDraw = draw;
+  window.draw = function() {
+    _rawDraw();
+    window._drawOverridePass();
+  };
+  // Load overrides from Supabase
+  loadOverrides();
+}
+
 /* ===================== INIT ===================== */
 // Legend collapse toggle (mobile). Start collapsed on narrow screens.
 (function initLegend() {
@@ -3008,6 +3249,7 @@ resize();
 draw();
 restoreAutosave();
 updateStatus();
+initAdminFeature();
 </script>
 </body>
 </html>
