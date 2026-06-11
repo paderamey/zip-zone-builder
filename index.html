@@ -772,6 +772,130 @@
   }
   #assign-status.err { color: #ff5c82; }
 
+
+  /* ---- Admin panel ---- */
+  #admin-btn {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 900;
+    background: var(--panel-2);
+    border: 1px solid var(--line-2);
+    color: var(--ink-dim);
+    border-radius: 6px;
+    padding: 7px 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 150ms;
+  }
+  #admin-btn:hover { opacity: 1; }
+
+  #admin-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(10,13,16,0.82);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+  #admin-panel.show { display: flex; }
+  #admin-panel .ap-box {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-radius: 10px;
+    width: 560px;
+    max-width: calc(100vw - 32px);
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 28px 28px 24px;
+  }
+  #admin-panel h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  #admin-panel .ap-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+  }
+  .ap-group {
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .ap-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .ap-group-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ap-label-input {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line-2);
+    color: var(--ink);
+    width: 100%;
+    padding: 2px 4px;
+    outline: none;
+  }
+  .ap-label-input:focus { border-bottom-color: var(--gold); }
+  .ap-note-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .ap-note-field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .ap-note-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--panel-2);
+    border: 1px solid var(--line-2);
+    border-radius: 5px;
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    padding: 7px 9px;
+    resize: vertical;
+    min-height: 54px;
+    outline: none;
+  }
+  .ap-note-field textarea:focus { border-color: var(--gold); }
+  .ap-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  #ap-save-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--good);
+    align-self: center;
+    margin-right: auto;
+    min-height: 14px;
+  }
+  #ap-save-status.err { color: #ff5c82; }
+
 </style>
 </head>
 <body>
@@ -3226,6 +3350,115 @@ function initAdminFeature() {
   loadOverrides();
 }
 
+
+/* ===================== GROUP CONFIG ADMIN ===================== */
+
+// Live group config — keyed by grp string
+const GROUP_CONFIG = {
+  'noservice': { label: 'No Service',    csr_note: 'Can Not Load From Location', sales_note: 'Add $2500' },
+  'puget':     { label: 'Puget Sound',   csr_note: 'Will Require Local Tow',     sales_note: 'Add $1000' },
+  'rural-100': { label: 'Rural 100+',    csr_note: 'Required backup POC',        sales_note: 'Add $1000' },
+  'rural-50':  { label: 'Rural 50–99',   csr_note: 'Required backup POC',        sales_note: 'Add $400'  },
+  'rural-25':  { label: 'Rural 25–49',   csr_note: 'Recommended backup POC',     sales_note: 'Add $150'  },
+  'standard':  { label: 'Standard',      csr_note: 'Recommended backup POC',     sales_note: null        },
+};
+
+async function loadGroupConfig() {
+  try {
+    const rows = await sbFetch('/rest/v1/group_config?select=grp,label,csr_note,sales_note', { method: 'GET' });
+    if (Array.isArray(rows)) {
+      for (const r of rows) {
+        if (GROUP_CONFIG[r.grp]) {
+          GROUP_CONFIG[r.grp] = { label: r.label, csr_note: r.csr_note, sales_note: r.sales_note };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Could not load group config:', e.message);
+  }
+}
+
+// Override categoryForZip to use live GROUP_CONFIG
+const _origCategoryForZip = categoryForZip;
+function categoryForZip(idx) {
+  const base = _origCategoryForZip(idx);
+  // Apply override group key if present
+  const overrideGrp = ZIP_OVERRIDES[idx];
+  const grpKey = overrideGrp || base.cls;
+  const cfg = GROUP_CONFIG[grpKey];
+  if (cfg) {
+    return {
+      cls:   grpKey,
+      label: cfg.label    || base.label,
+      csr:   cfg.csr_note || base.csr,
+      sales: cfg.sales_note !== undefined ? cfg.sales_note : base.sales,
+    };
+  }
+  return base;
+}
+
+// ---- Admin panel open/close ------------------------------------------------
+document.getElementById('admin-btn').addEventListener('click', () => {
+  openPinModal(() => openAdminPanel());
+});
+
+function openAdminPanel() {
+  // Populate fields from live config
+  document.querySelectorAll('#admin-panel .ap-group').forEach(el => {
+    const grp = el.dataset.grp;
+    const cfg = GROUP_CONFIG[grp] || {};
+    el.querySelector('[data-field="label"]').value      = cfg.label     || '';
+    el.querySelector('[data-field="csr_note"]').value   = cfg.csr_note  || '';
+    el.querySelector('[data-field="sales_note"]').value = cfg.sales_note || '';
+  });
+  document.getElementById('ap-save-status').textContent = '';
+  document.getElementById('admin-panel').classList.add('show');
+}
+
+function closeAdminPanel() {
+  document.getElementById('admin-panel').classList.remove('show');
+}
+
+document.getElementById('ap-cancel').addEventListener('click', closeAdminPanel);
+document.getElementById('admin-panel').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('admin-panel')) closeAdminPanel();
+});
+
+// ---- Save group config to Supabase -----------------------------------------
+document.getElementById('ap-save').addEventListener('click', async () => {
+  const statusEl = document.getElementById('ap-save-status');
+  statusEl.textContent = 'Saving…';
+  statusEl.className = '';
+
+  const rows = [];
+  document.querySelectorAll('#admin-panel .ap-group').forEach(el => {
+    const grp = el.dataset.grp;
+    const label      = el.querySelector('[data-field="label"]').value.trim();
+    const csr_note   = el.querySelector('[data-field="csr_note"]').value.trim() || null;
+    const sales_note = el.querySelector('[data-field="sales_note"]').value.trim() || null;
+    rows.push({ grp, label, csr_note, sales_note, updated_at: new Date().toISOString() });
+  });
+
+  try {
+    await sbFetch('/rest/v1/group_config', {
+      method: 'POST',
+      prefer: 'resolution=merge-duplicates',
+      body: JSON.stringify(rows),
+    });
+    // Apply locally
+    for (const r of rows) {
+      GROUP_CONFIG[r.grp] = { label: r.label, csr_note: r.csr_note, sales_note: r.sales_note };
+    }
+    statusEl.textContent = '✓ Saved';
+    // Refresh the lookup card if one is showing
+    const zipInput = document.getElementById('zip-input');
+    if (zipInput && zipInput.value.trim()) zipInput.dispatchEvent(new Event('input'));
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.className = 'err';
+  }
+});
+
 /* ===================== INIT ===================== */
 // Legend collapse toggle (mobile). Start collapsed on narrow screens.
 (function initLegend() {
@@ -3244,6 +3477,119 @@ draw();
 restoreAutosave();
 updateStatus();
 initAdminFeature();
+loadGroupConfig();
 </script>
+
+<button id="admin-btn" title="Admin: edit group labels and notes">Admin</button>
+
+<div id="admin-panel">
+  <div class="ap-box">
+    <h3>Group Configuration</h3>
+    <div class="ap-sub">Edit labels, CSR instructions, and Sales notes per group. Changes save to database and apply immediately.</div>
+    
+    <div class="ap-group" data-grp="noservice">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#d11a4a"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-group" data-grp="puget">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#3b82f6"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-group" data-grp="rural-100">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#ff5fa8"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-group" data-grp="rural-50">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#9b7cff"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-group" data-grp="rural-25">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#3ec7c2"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-group" data-grp="standard">
+      <div class="ap-group-header">
+        <span class="ap-group-dot" style="background:#4a5563"></span>
+        <input class="ap-label-input" data-field="label" placeholder="Group label" autocomplete="off">
+      </div>
+      <div class="ap-note-row">
+        <div class="ap-note-field">
+          <label>CSR Note</label>
+          <textarea data-field="csr_note" placeholder="Instructions for CSR…" rows="2"></textarea>
+        </div>
+        <div class="ap-note-field">
+          <label>Sales Note</label>
+          <textarea data-field="sales_note" placeholder="Pricing / sales note…" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="ap-actions">
+      <span id="ap-save-status"></span>
+      <button class="btn" id="ap-cancel">Close</button>
+      <button class="btn primary" id="ap-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
