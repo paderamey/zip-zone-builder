@@ -2175,6 +2175,7 @@ function finishDrawing() {
   document.getElementById('modal-input').value = `Zone ${zoneSerial}`;
   document.getElementById('modal').classList.add('show');
   setTimeout(() => document.getElementById('modal-input').select(), 50);
+  if (typeof updateAssignBtn === 'function') updateAssignBtn();
 }
 
 let pendingZoneIndices = null;
@@ -3083,14 +3084,7 @@ window._drawOverridePass = function() {
 })();
 
 // ---- Show/hide Assign button when a zone is drawn --------------------------
-// We hook finishDrawing to show the button once ZIPs are pending.
-const _origFinishDrawing = finishDrawing;
-function finishDrawing() {
-  _origFinishDrawing();
-  // After finishDrawing runs, pendingZoneIndices is set IF there were ZIPs.
-  // We reveal the assign button whenever there are pending indices.
-  updateAssignBtn();
-}
+// updateAssignBtn is called when the naming modal opens (patched below).
 
 // Also hook modal-save and modal-cancel to update button visibility.
 document.getElementById('modal-save').addEventListener('click', () => {
