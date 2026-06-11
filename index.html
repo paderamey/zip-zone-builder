@@ -2992,11 +2992,11 @@ async function ensureTable() {
 
 async function loadOverrides() {
   try {
-    const rows = await sbFetch('/rest/v1/zip_overrides?select=zip,grp', { method: 'GET', prefer: '' });
+    const rows = await sbFetch('/rest/v1/zip_overrides?select=zip_code,category', { method: 'GET', prefer: '' });
     if (Array.isArray(rows)) {
       for (const r of rows) {
-        const idx = ZIP_INDEX.get(r.zip);
-        if (idx !== undefined) ZIP_OVERRIDES[idx] = r.grp;
+        const idx = ZIP_INDEX.get(r.zip_code);
+        if (idx !== undefined) ZIP_OVERRIDES[idx] = r.category;
       }
     }
     overridesLoaded = true;
@@ -3012,7 +3012,7 @@ async function saveOverrides(zipIndices, group) {
   const rows = [];
   for (const idx of zipIndices) {
     const zip = ZSTR.substr(idx * 5, 5);
-    rows.push({ zip, grp: group, updated_at: new Date().toISOString() });
+    rows.push({ zip_code: zip, category: group, created_at: new Date().toISOString() });
   }
   // Batch in chunks of 500
   const CHUNK = 500;
