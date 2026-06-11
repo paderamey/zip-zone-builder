@@ -3124,8 +3124,9 @@ document.getElementById('pin-cancel').addEventListener('click', closePinModal);
 document.getElementById('pin-confirm').addEventListener('click', () => {
   const val = document.getElementById('pin-input').value;
   if (val === ADMIN_PIN) {
+    const cb = _assignCallback;
     closePinModal();
-    if (_assignCallback) _assignCallback();
+    if (cb) cb();
   } else {
     document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
     document.getElementById('pin-input').value = '';
