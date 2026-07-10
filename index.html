@@ -3261,6 +3261,10 @@ async function loadOverrides() {
     }
     overridesLoaded = true;
     draw(); // repaint with overrides
+    // Refresh lookup card if a ZIP is currently displayed
+    if (typeof searchedZipIdx !== 'undefined' && searchedZipIdx >= 0) {
+      setCategoryBadge(searchedZipIdx);
+    }
   } catch (e) {
     console.warn('Could not load overrides (table may not exist yet):', e.message);
     overridesLoaded = true;
@@ -3511,6 +3515,10 @@ async function loadGroupConfig() {
     }
   } catch (e) {
     console.warn('Could not load group config:', e.message);
+  }
+  // Refresh lookup card if a ZIP is currently displayed
+  if (typeof searchedZipIdx !== 'undefined' && searchedZipIdx >= 0) {
+    setCategoryBadge(searchedZipIdx);
   }
 }
 
