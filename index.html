@@ -3316,11 +3316,21 @@ window._drawOverridePass = function() {
     'rural-25':  '#3ec7c2',
     'standard':  '#4a5563',
   };
-  // Group indices by colour
+  // Map group keys to their visibility flag
+  const layerVisible = {
+    'noservice':  showNoService,
+    'puget':      showPuget,
+    'rural-100':  showRural100,
+    'rural-50':   showRural50,
+    'rural-25':   showRural25,
+    'standard':   false, // standard overrides never need a separate pass
+  };
+  // Group indices by colour, respecting layer toggles
   const byGroup = {};
   for (const [idxStr, grp] of Object.entries(ZIP_OVERRIDES)) {
     const idx = parseInt(idxStr);
     if (selectedSet[idx]) continue; // selected dots take priority
+    if (!layerVisible[grp]) continue; // layer is toggled off — skip
     if (!byGroup[grp]) byGroup[grp] = [];
     byGroup[grp].push(idx);
   }
