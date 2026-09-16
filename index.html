@@ -2090,39 +2090,7 @@ function draw() {
     ctx.scale(viewScale, viewScale);
   }
 
-  // Search highlight — drawn LAST so it's always visible regardless of zone/rural state.
-  // A pulsing cyan ring around the searched ZIP, with a connecting line to a label.
-  if (searchedZipIdx >= 0 && searchedZipIdx < N) {
-    // Reset to screen space for the highlight so the ring is constant pixel size.
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.translate(viewTx, viewTy);
-    const x = sxBase[searchedZipIdx] * viewScale;
-    const y = syBase[searchedZipIdx] * viewScale;
-    // Pulse: 0.7..1.0 amplitude on a sine
-    const pulse = 0.7 + 0.3 * (0.5 + 0.5 * Math.sin(searchPulsePhase * Math.PI * 2));
-    const baseR = 3;
-    const outerR = baseR + 4 * pulse;
-    // Outer fading ring (the pulse)
-    ctx.strokeStyle = `rgba(255,255,255,${0.55 * (1 - pulse) + 0.2})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, y, outerR, 0, Math.PI * 2);
-    ctx.stroke();
-    // Solid inner ring
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = 'rgba(255,255,255,0.9)';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(x, y, baseR, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    // Bright center dot (so the ZIP is identifiable even if its color was something else)
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(x, y, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
+
 
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
@@ -3142,7 +3110,6 @@ function performSearch(query) {
     centerOn(sxBase[idx], syBase[idx], Math.max(2.2, viewScale));
     searchPulsePhase = 0;
     stopSearchAnim();
-    searchAnimReq = requestAnimationFrame(tickSearchAnim);
     return;
   }
 
@@ -3190,7 +3157,6 @@ function performSearch(query) {
   fitToBounds(minX, minY, maxX, maxY, 0.18);
   searchPulsePhase = 0;
   stopSearchAnim();
-  searchAnimReq = requestAnimationFrame(tickSearchAnim);
 }
 
 document.getElementById('zip-search-input').addEventListener('input', (e) => {
