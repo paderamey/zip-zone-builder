@@ -1717,8 +1717,8 @@ function draw() {
   ctx.scale(viewScale, viewScale);
 
   // Dot size: scale inversely so dots don't get huge when zoomed in.
-  const dotR = Math.max(0.3, 1.4 / Math.pow(viewScale, 0.75));
-  const selR = Math.max(0.5, 2.3 / Math.pow(viewScale, 0.75));
+  const dotR = Math.max(0.27, 1.26 / Math.pow(viewScale, 0.75));
+  const selR = Math.max(0.45, 2.07 / Math.pow(viewScale, 0.75));
 
   // First pass: unselected dots. Color logic when any rural toggle is on:
   // Each ZIP gets the color of the DEEPEST active tier it qualifies for.
@@ -1934,7 +1934,7 @@ function draw() {
     };
 
     // Draw dots first (base-coord space, scaled with view)
-    const dotR = Math.max(0.5, 2.6 / Math.pow(viewScale, 0.75));
+    const dotR = Math.max(0.45, 2.34 / Math.pow(viewScale, 0.75));
     const haloR = dotR + Math.max(1.2, 1.6 / Math.sqrt(viewScale));
 
     // halo behind each city dot for visibility against zone dots
@@ -3307,7 +3307,7 @@ window._drawOverridePass = function() {
   ctx.translate(viewTx, viewTy);
   ctx.scale(viewScale, viewScale);
 
-  const dotR = Math.max(0.3, 1.6 / Math.pow(viewScale, 0.75));
+  const dotR = Math.max(0.27, 1.44 / Math.pow(viewScale, 0.75));
   const colors = {
     'noservice': '#d11a4a',
     'puget':     '#3b82f6',
