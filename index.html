@@ -2043,8 +2043,8 @@ function draw() {
   // Drawn before the single-ZIP pulse so they can coexist if needed.
   if (searchedCityIndices && searchedCityIndices.length > 0) {
     // First: cyan dot overlay on each matching ZIP in base coords
-    const cityDotR = Math.max(1.8, 2.8 / Math.sqrt(viewScale));
-    ctx.fillStyle = '#ffffff';
+    const cityDotR = Math.max(0.22, 1.01 / Math.pow(viewScale, 0.75)) * 1.5;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.beginPath();
     for (const idx of searchedCityIndices) {
       const x = sxBase[idx], y = syBase[idx];
@@ -3175,6 +3175,7 @@ function performSearch(query) {
   fitToBounds(minX, minY, maxX, maxY, 0.18);
   searchPulsePhase = 0;
   stopSearchAnim();
+  draw();
 }
 
 document.getElementById('zip-search-input').addEventListener('input', (e) => {
