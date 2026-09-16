@@ -2092,6 +2092,22 @@ function draw() {
 
 
 
+  // Search highlight — tight ring around searched ZIP, scales with map dots
+  if (searchedZipIdx >= 0 && searchedZipIdx < N) {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.translate(viewTx, viewTy);
+    ctx.scale(viewScale, viewScale);
+    const x = sxBase[searchedZipIdx];
+    const y = syBase[searchedZipIdx];
+    const r = Math.max(0.22, 1.01 / Math.pow(viewScale, 0.75)) * 2.2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = Math.max(0.15, 0.5 / viewScale);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
@@ -3110,6 +3126,7 @@ function performSearch(query) {
     centerOn(sxBase[idx], syBase[idx], Math.max(2.2, viewScale));
     searchPulsePhase = 0;
     stopSearchAnim();
+    searchAnimReq = requestAnimationFrame(tickSearchAnim);
     return;
   }
 
