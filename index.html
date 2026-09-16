@@ -3336,7 +3336,7 @@ window._drawOverridePass = function() {
   }
   for (const [grp, indices] of Object.entries(byGroup)) {
     const col = colors[grp] || '#4a5563';
-    const r = grp === 'standard' ? dotR : dotR * 1.4;
+    const r = dotR;
     ctx.fillStyle = col;
     ctx.beginPath();
     for (const idx of indices) {
