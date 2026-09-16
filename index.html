@@ -2100,8 +2100,8 @@ function draw() {
     const y = syBase[searchedZipIdx] * viewScale;
     // Pulse: 0.7..1.0 amplitude on a sine
     const pulse = 0.7 + 0.3 * (0.5 + 0.5 * Math.sin(searchPulsePhase * Math.PI * 2));
-    const baseR = 7;
-    const outerR = baseR + 8 * pulse;
+    const baseR = 3;
+    const outerR = baseR + 4 * pulse;
     // Outer fading ring (the pulse)
     ctx.strokeStyle = `rgba(255,255,255,${0.55 * (1 - pulse) + 0.2})`;
     ctx.lineWidth = 2;
