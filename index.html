@@ -3307,7 +3307,7 @@ window._drawOverridePass = function() {
   ctx.translate(viewTx, viewTy);
   ctx.scale(viewScale, viewScale);
 
-  const dotR = Math.max(0.22, 1.15 / Math.pow(viewScale, 0.75));
+  const dotR = Math.max(0.22, 1.01 / Math.pow(viewScale, 0.75));
   const colors = {
     'noservice': '#d11a4a',
     'puget':     '#3b82f6',
